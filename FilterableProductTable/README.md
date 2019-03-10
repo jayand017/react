@@ -1,4 +1,4 @@
-# Thinking In React
+# Filterable Product Table
 
 You’ll see here that we have five components in our simple app. We’ve italicized the data each component represents.
 
