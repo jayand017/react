@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Filterable Product Table</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  </head>
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+    }
+    .category {
+      font-weight: 700;
+      width: 15%
+    }
+    .productRow {
+      width: 15%
+    }
+    .productRowHeader {
+      width: 15%;
+      font-weight: 700;
+    }
+    .productName {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .productPrice {
+      font-size: 13px;
+    }
+    .searchBar {
+      padding: 10px 0px;
+      font-size: 13px;
+    }
+    .colored{
+      color: red;
+    }
+    .default{
+      color: black;
+    }
+  </style>
+  <body>
+    <div id="root" class="container-fluid"></div>
+    <script type="text/babel">
+
+      class FilterableProductTable extends React.Component {
+        constructor(props){
+          super(props);
+        }
+
+        render() {
+          return (
+            <React.Fragment>
+              <SearchBar data={this.props.data} />
+            </React.Fragment>
+          )
+        }
+      }
+
+      class SearchBar extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            searchText: "",
+            filteredData: this.props.data,
+            checked: false
+          }
+          this.searchHandler = this.searchHandler.bind(this);
+          this.checkedHandler = this.checkedHandler.bind(this);
+        }
+
+        searchHandler(event){
+          //triggers when we start typing in input field
+          this.setState({searchText: event.target.value}, () => {
+            /* state needs time to mutate, so we need to write a callback to the setState function
+            https://stackoverflow.com/questions/41278385/setstate-doesnt-update-the-state-immediately/41278440 */
+            this.setState({filteredData: this.getFilteredData()})
+          });
+        }
+
+        checkedHandler(){
+          //triggers when we toggle checkbox
+          this.setState({checked: !this.state.checked}, () => {
+            if(this.state.checked) {
+              this.setState({filteredData: this.afterToggleData()})
+            }
+            else {
+              this.setState({filteredData: this.getFilteredData()})
+            }
+          })
+        }
+
+        getFilteredData(){
+          //returns filtered data on basis of users input
+          let data = this.props.data;
+          let query = this.state.searchText;
+          return data.filter(element => {
+            return element.name.toLowerCase().indexOf(query.toLowerCase()) > -1
+          })
+        }
+
+        afterToggleData() {
+          //return filtered data on basis of user input and value of checkbox
+          let data = this.props.data;
+          let query = this.state.searchText;
+          return data.filter(element => {
+            return element.name.toLowerCase().indexOf(query.toLowerCase()) > -1 && element.stocked == true 
+          })
+        }
+
+        render() {
+          return (
+            <React.Fragment>
+            <div className="row searchBar">
+            <form>
+              <div className="col-md-12" >
+                <input type = "text" placeholder = "Search..." value={this.state.searchText} onChange={this.searchHandler} />
+              </div>
+                <div className="col-md-12" ><input type = "checkbox" onChange={this.checkedHandler} />Only show products in stock</div>
+            </form>
+            </div>
+            <ProductTable data={this.state.filteredData} />
+            </React.Fragment>
+          )
+        }
+      }
+
+      class ProductTable extends React.Component {
+        constructor(props) {
+          super(props);
+        }
+        render() {
+          //creating distinct category list
+          const data = this.props.data;
+          let categoryArray = [];
+          data.forEach(element => {
+            if(categoryArray.includes(element.category) === false){
+              categoryArray.push(element.category)
+            }
+          });
+          return (
+            <React.Fragment>
+              <div className="row productRowHeader">
+                <div className="col-md-8">Name</div>
+                <div className="col-md-4">Price</div>
+              </div>
+              { 
+                categoryArray.map((element, index) =>
+                  <ProductCategoryRow key={index} category={element} data={data} />
+                )
+              }
+            </React.Fragment>
+          )
+        }
+      }
+
+     function ProductCategoryRow(props) {
+        //creating product list on basis of current category
+        const data = props.data;
+        const currentCategory = props.category;
+        let productArray = [];
+        data.forEach(element => {
+          if(element.category == currentCategory) {
+            productArray.push({name: element.name, price: element.price, stocked: element.stocked})
+          }
+        })
+
+        return (
+          <React.Fragment>
+            <div className="category">{props.category}</div>
+            {
+              productArray.map((element, index) =>
+                <ProductRow key={index} name={element.name} stocked={element.stocked} price={element.price}/>
+              )
+            }
+          </React.Fragment>
+        )
+      }
+
+      class ProductRow extends React.Component {
+        constructor(props){
+          super(props)
+        }
+        render() {
+          return ( 
+            <div className="row productRow">
+            <div className={"col-md-8 productName " + (this.props.stocked ? 'default' : 'colored')}>{this.props.name}</div>
+            <div className="col-md-4 productPrice">{this.props.price}</div>
+          </div> )
+        }
+      }
+
+      const data = [
+        {category: "Sporting Goods", price: "$49.99", stocked: true, name: "Football"},
+        {category: "Sporting Goods", price: "$9.99", stocked: true, name: "Baseball"},
+        {category: "Sporting Goods", price: "$29.99", stocked: false, name: "Basketball"},
+        {category: "Electronics", price: "$99.99", stocked: true, name: "iPod Touch"},
+        {category: "Electronics", price: "$399.99", stocked: false, name: "iPhone 5"},
+        {category: "Electronics", price: "$199.99", stocked: true, name: "Nexus 7"}
+      ];
+      ReactDOM.render(
+        <FilterableProductTable data={data} />,
+        document.getElementById('root')
+      );
+
+
+    </script>
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this section for a production-ready setup with JSX:
+      https://reactjs.org/docs/add-react-to-a-website.html#add-jsx-to-a-project
+
+      In a larger project, you can use an integrated toolchain that includes JSX instead:
+      https://reactjs.org/docs/create-a-new-react-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      https://reactjs.org/docs/react-without-jsx.html
+    -->
+  </body>
+</html>
