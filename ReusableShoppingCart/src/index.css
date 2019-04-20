@@ -1,0 +1,19 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans");
+@import url("https://use.fontawesome.com/releases/v5.8.1/css/all.css");
+
+body {
+    font-family: 'Open Sans', sans-serif;
+}
+
+.cart-outer {
+    width: 18rem;
+    position: absolute;
+    right: 0;
+    margin-right: 15px;
+    margin-top: -5px;
+    z-index: 99;
+}
+
+.cart-row-bg {
+    background-color:#f8f9fa !important;
+}
