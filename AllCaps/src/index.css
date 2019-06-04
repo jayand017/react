@@ -1,0 +1,9 @@
+body {
+  margin: 10;
+  padding: 20;
+}
+
+input[type=text] {
+  padding: 5px 7px;
+  font-family: 'Roboto', sans-serif;
+}
